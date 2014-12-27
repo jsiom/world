@@ -33,11 +33,9 @@ function possibleExtensions(db, pattern){
   pattern = pattern.toArray()
   return function(combine){
     return function(result, frame){
-      var seen = []
       return db.reduce(function(result, datom){
         var m = match(pattern, frame, datom)
-        if (m == null || seen.some(eql(m))) return result
-        seen.push(m)
+        if (m == null) return result
         return combine(result, m)
       }, result)
     }
@@ -87,7 +85,7 @@ function extract(output, frame){
 }
 
 function combine(result, value){
-  result.push(value)
+  if (!result.some(eql(value))) result.push(value)
   return result
 }
 
@@ -115,11 +113,11 @@ function query(query, db){
 
 // the rest is transducer crap
 function compose(fns){
-  return foldr(fns, compose2)
+  return foldr(fns, invoke)
 }
 
-function compose2(transducer, combiner){
-  return transducer(combiner)
+function invoke(fn, argument){
+  return fn(argument)
 }
 
 function foldr(array, fn){

@@ -22,6 +22,8 @@ var db = world.create({
 it('should produce unique results', function(){
   var result = query('[:find ?e :where [?e]]', db)
   assert.equal(result, [[1],[2],[3],[4]])
+  var result = query('[:find ?a :where [?e ?a]]', db)
+  assert.equal(result, [['person/name'],['person/born'],['person/mother'],['person/child']])
 })
 
 it('unification across patterns', function(){
