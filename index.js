@@ -10,7 +10,7 @@ const Cell = require('cell')
  * @return {Cell}
  */
 
-function create(schema, datoms){
+const create = (schema, datoms) => {
   if (Array.isArray(schema)) {
     datoms = schema
     schema = {}
@@ -18,10 +18,12 @@ function create(schema, datoms){
   return new Cell(new DB(schema, datoms || [], 0))
 }
 
-function DB(schema, datoms, eid){
-  this.schema = schema
-  this.datoms = datoms
-  this.eid = eid
+class DB {
+  constructor(schema, datoms, eid) {
+    this.schema = schema
+    this.datoms = datoms
+    this.eid = eid
+  }
 }
 
 /**
@@ -35,7 +37,7 @@ function DB(schema, datoms, eid){
  *           ['+', -1, 'aka', "Muss"]], db)
  */
 
-function transact(tx, db){
+const transact = (tx, db) => {
   if (db instanceof Cell) return db.set(transact(tx, db.value))
   db = new DB(db.schema, db.datoms.slice(), db.eid)
   var ids = {}
@@ -54,7 +56,7 @@ function transact(tx, db){
   return db
 }
 
-function assert(datom, db, ids, eid){
+const assert = (datom, db, ids, eid) => {
   var schema = db.schema[datom[1]]
 
   // handle refs
@@ -90,7 +92,7 @@ function assert(datom, db, ids, eid){
   db.datoms.push(datom)
 }
 
-function retract(datom, db){
+const retract = (datom, db) => {
   for (var i = 0, len = db.datoms.length; i < len; i++) {
     var existing = db.datoms[i]
     if (existing[0] != datom[0]) continue

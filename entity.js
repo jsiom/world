@@ -1,5 +1,5 @@
-var lazy = require('lazy-property/decorator')
-var query = require('./query')
+const lazy = require('lazy-property/decorator')
+const query = require('./query')
 
 /**
  * Entities provide an ORM into a DB
@@ -16,11 +16,11 @@ class Entity {
     this.db = db
   }
   @lazy attrs() {
-    var schema = this.db.schema
-    var cache = this.cache
+    const schema = this.db.schema
+    const cache = this.cache
+    const attrs = {}
     var data = query([Symbol.for(':find'), Symbol.for('?attr'), Symbol.for('?val'),
                       Symbol.for(':where'), [this.eid, Symbol.for('?attr'), Symbol.for('?val')]], this.db)
-    var attrs = {}
     for (var i = 0, len = data.length; i < len; i++) {
       var [key,val] = data[i]
       var scheme = schema[key]

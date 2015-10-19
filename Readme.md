@@ -40,7 +40,7 @@ var {transact,create,entity,query} = require('world')
 
 ### `create([schema:Object], [datoms:Array])`
 
-  Create a new DB wrapped in a Cell. The `schema` is used to define the types of certain attributes in the database. Attributes with no special behaviour don't need to be declared in the schema. `datoms` is just an initial set of datoms for the DB to contain.
+  Create a new DB wrapped in a Cell. The `schema` is used to define the types of certain attributes in the database. Attributes with no special behavior don't need to be declared in the schema. `datoms` is just an initial set of datoms for the DB to contain.
 
 ```js
 var db = create({
