@@ -1,9 +1,7 @@
-var world = require('..')
-var transact = world.transact
-var create = world.create
-var query = world.query
+const {transact,create,query} = require('..')
+const {deepEqual} = require('assert')
 
-var db = create({
+const db = create({
   'person/parent': {
     cardinality: 'many',
     type: 'ref'
@@ -32,39 +30,39 @@ it('adding new entities', function(){
     if (typeof datom[2] == 'number') datom[2] = Math.abs(datom[2])
     return datom
   })
-  assert.equal(result, datoms)
+  deepEqual(result, datoms)
 })
 
 it('adding new attributes to existing entities', function(){
   transact([['+', 1, 'person/hair', 'ginger']], db)
   var result = query('[:find ?h :where [1 "person/hair" ?h]]', db)
-  assert.equal(result, [['ginger']])
+  deepEqual(result, [['ginger']])
 })
 
 it('overwriting existing data', function(){
   transact([['+', 1, 'person/name', 'bill'],
             ['+', 1, 'person/born', 1982]], db)
   var result = query('[:find ?n :where [1 "person/name" ?n]]', db)
-  assert.equal(result, [['bill']])
+  deepEqual(result, [['bill']])
 })
 
 it('retract data', function(){
   transact([['-', 1, 'person/hair', 'ginger']], db)
   var result = query('[:find ?h :where [1 "person/hair" ?h]]', db)
-  assert.equal(result, [])
+  deepEqual(result, [])
 })
 
 it('cardinality many', function(){
   transact([['+', 3, 'person/parent', 5],
             ['+', 5, 'person/name', 'john']], db)
-  var result = query('[:find ?name \
-                       :where [3 "person/parent" ?p]\
-                              [?p "person/name" ?name]]', db)
-  assert.equal(result, [['elizabeth'], ['john']])
+  var result = query(`[:find ?name
+                       :where [3 "person/parent" ?p]
+                              [?p "person/name" ?name]]`, db)
+  deepEqual(result, [['elizabeth'], ['john']])
 })
 
 it('retract cardinality many', function(){
   transact([['-', 3, 'person/parent']], db)
   var result = query('[:find ?p :where [3 "person/parent" ?p]]', db)
-  assert.equal(result, [])
+  deepEqual(result, [])
 })

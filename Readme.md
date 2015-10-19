@@ -28,16 +28,12 @@
 
 ## Installation
 
-With [packin](//github.com/jkroso/packin): `packin add jsiom/world`
+`npm install jsiom/world`
 
 then in your app:
 
 ```js
-var world = require('world')
-var transact = world.transact
-var create = world.create
-var entity = world.entity
-var query = world.query
+var {transact,create,entity,query} = require('world')
 ```
 
 ## API

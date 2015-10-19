@@ -1,7 +1,8 @@
-var query = require('../query')
-var world = require('..')
+const {equal,deepEqual} = require('assert')
+const {create,entity} = require('..')
+const query = require('../query')
 
-var db = world.create({
+const db = create({
   'person/mother': {type: 'ref'},
   'person/child': {type: 'ref'}
 }, [
@@ -20,46 +21,43 @@ var db = world.create({
 ])
 
 it('should produce unique results', function(){
-  var result = query('[:find ?e :where [?e]]', db)
-  assert.equal(result, [[1],[2],[3],[4]])
-  var result = query('[:find ?a :where [?e ?a]]', db)
-  assert.equal(result, [['person/name'],['person/born'],['person/mother'],['person/child']])
+  deepEqual(query('[:find ?e :where [?e]]', db), [[1],[2],[3],[4]])
+  deepEqual(query('[:find ?a :where [?e ?a]]', db),
+            [['person/name'],['person/born'],['person/mother'],['person/child']])
 })
 
 it('unification across patterns', function(){
-  var result = query('[:find ?born\
-                       :where\
-                         [?e "person/name" "henry"]\
-                         [?e "person/born" ?born]]', db)
-  assert.equal(result, [[1984]])
+  let result = query(`[:find  ?born
+                       :where [?e "person/name" "henry"]
+                              [?e "person/born" ?born]]`, db)
+  deepEqual(result, [[1984]])
 })
 
 it('unification across patterns with multiple blanks in one pattern', function(){
-  var result = query('[:find ?born\
-                       :where\
-                         [?e ?attr "henry"]\
-                         [?e "person/born" ?born]]', db)
-  assert.equal(result, [[1984]])
+  let result = query(`[:find  ?born
+                       :where [?e ?attr "henry"]
+                              [?e "person/born" ?born]]`, db)
+  deepEqual(result, [[1984]])
 })
 
 it('unify across entities', function(){
-  var result = query('[:find ?mum\
-                       :where\
-                         [?e "person/name" "henry"]\
-                         [?e "person/mother" ?m]\
-                         [?m "person/name" ?mum]]', db)
-  assert.equal(result, [['diana']])
+  let result = query(`[:find  ?mother
+                       :where [?e "person/name" "henry"]
+                              [?e "person/mother" ?m]
+                              [?m "person/name" ?mother]]`, db)
+  deepEqual(result, [['diana']])
 })
 
 describe('entities', function(){
-  var e = world.entity(db.value, '1')
+  const e = entity(db.value, 1)
+
   it('get', function(){
-    assert(e.get('person/name') == 'henry')
-    assert(e.get('person/born') == 1984)
-    assert(e.get('person/mother').get('person/name') == 'diana')
+    deepEqual(e.get('person/name'), 'henry')
+    deepEqual(e.get('person/born'), 1984)
+    deepEqual(e.get('person/mother').get('person/name'), 'diana')
   })
 
   it('circular references should preserve ===', function(){
-    assert(e.get('person/mother').get('person/child') === e)
+    equal(e.get('person/mother').get('person/child'), e)
   })
 })

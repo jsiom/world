@@ -1,26 +1,27 @@
 {
   "name": "world",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "An immutable graph data-structure designed to be accessed using relational queries",
   "keywords": ["db","datomic","graph","relational"],
   "dependencies": {
-    "parse-edn": "jkroso/parse-edn",
     "cell": "jkroso/cell",
     "lazy-property": "1",
+    "jkroso-type": "1",
+    "transducer": "0",
     "curryable": "0",
+    "read-edn": "0",
     "equals": "1"
   },
   "devDependencies": {
-    "assert": "jkroso/assert",
     "serve": "jkroso/serve",
     "hydro-html": "*",
     "hydro-bdd": "*",
     "hydro-dot": "*",
-    "hydro": "*",
-    "jsmd": "*"
+    "hydro": "*"
   },
-  "repository": "git://github.com/jsiom/world.git",
+  "transpile": [["*.js", "!sourcegraph/babel->js", {"stage": 1}]],
   "files": ["index.js", "entity.js", "query.js"],
+  "repository": "jsiom/world",
   "author": "Jake Rosoman",
   "license": "MIT"
 }

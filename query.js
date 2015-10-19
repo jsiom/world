@@ -1,7 +1,8 @@
-var parseEDN = require('parse-edn')
-var curry = require('curryable')
-var equals = require('equals')
-var Cell = require('cell')
+const {compose,map} = require('transducer')
+const readEDN = require('read-edn')
+const type = require('jkroso-type')
+const equal = require('equals')
+const Cell = require('cell')
 
 /**
  * run the `query` against the `db`
@@ -12,11 +13,12 @@ var Cell = require('cell')
  * @return {Array}
  */
 
-function qeval(query, output, db){
-  var fns = query.map(possibleExtensions.bind(null, db))
-  fns.push(map(extract.bind(null, output)))
-  fns.push(combine)
-  return compose(fns)([], {})
+const qeval = (query, output, db) => {
+  var queryPipeline = compose(
+    query.map(possibleExtensions(db)),
+    map(extract(output)))
+    (combine)
+  return queryPipeline([], {})
 }
 
 /**
@@ -29,18 +31,12 @@ function qeval(query, output, db){
  * @return {Function}
  */
 
-function possibleExtensions(db, pattern){
-  pattern = pattern.toArray()
-  return function(combine){
-    return function(result, frame){
-      return db.reduce(function(result, datom){
-        var m = match(pattern, frame, datom)
-        if (m == null) return result
-        return combine(result, m)
-      }, result)
-    }
-  }
-}
+const possibleExtensions = db => pattern => combine => (result, frame) =>
+  db.reduce((result, datom) => {
+    var m = match(pattern, frame, datom)
+    if (m == null) return result
+    return combine(result, m)
+  }, result)
 
 /**
  * Match `pattern` against `datom` in the environment of `frame`
@@ -55,18 +51,18 @@ function possibleExtensions(db, pattern){
  * @return {Object|null}
  */
 
-function match(pattern, frame, datom){
+const match = (pattern, frame, datom) => {
   var newFrame = frame
   for (var i = 0, len = pattern.length; i < len; i++) {
     var a = pattern[i]
     var b = datom[i]
     if (a == b) continue
-    if (!(a instanceof parseEDN.Symbol)) return null
-    if (a.value in frame) {
-      if (frame[a.value] != b) return null
+    if (type(a) != 'symbol') return null
+    if (a in frame) {
+      if (frame[a] != b) return null
     } else {
       if (newFrame === frame) newFrame = Object.create(frame)
-      newFrame[a.value] = b
+      newFrame[a] = b
     }
   }
   return newFrame
@@ -80,17 +76,12 @@ function match(pattern, frame, datom){
  * @return {Array}
  */
 
-function extract(output, frame){
-  return output.map(function(symbol){ return frame[symbol.value] })
-}
+const extract = output => frame =>
+  output.map(symbol => frame[symbol])
 
-function combine(result, value){
-  if (!result.some(eql(value))) result.push(value)
+const combine = (result, value) => {
+  if (!result.some(x => equal(value, x))) result.push(value)
   return result
-}
-
-function eql(a){
-  return function(b){ return equals(a, b) }
 }
 
 /**
@@ -101,36 +92,14 @@ function eql(a){
  * @return {Array}
  */
 
-function query(query, db){
-  if (typeof query == 'string') query = parseEDN(query).toArray()
+const query = (query, db) => {
+  if (typeof query == 'string') query = readEDN(query)
   if (db instanceof Cell) db = db.value
-  var find = query.indexOf(':find')
-  var where = query.indexOf(':where')
+  var find = query.indexOf(Symbol.for(':find'))
+  var where = query.indexOf(Symbol.for(':where'))
   var output = query.slice(find + 1, where)
   var patterns = query.slice(where + 1)
   return qeval(patterns, output, db.datoms)
 }
-
-// the rest is transducer crap
-function compose(fns){
-  return foldr(fns, invoke)
-}
-
-function invoke(fn, argument){
-  return fn(argument)
-}
-
-function foldr(array, fn){
-  var i = array.length - 1
-  var init = array[i]
-  while (i > 0) {
-    init = fn(array[--i], init)
-  }
-  return init
-}
-
-var map = curry(function map(fn, combine, result, value){
-  return combine(result, fn(value))
-})
 
 module.exports = query
