@@ -1,5 +1,5 @@
 const {equal,deepEqual} = require('assert')
-const {create,entity} = require('..')
+const {create,Entity} = require('..')
 const query = require('../query')
 
 const db = create({
@@ -49,7 +49,7 @@ it('unify across entities', function(){
 })
 
 describe('entities', function(){
-  const e = entity(db.value, 1)
+  const e = new Entity(db.value, 1)
 
   it('get', function(){
     deepEqual(e.get('person/name'), 'henry')

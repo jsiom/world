@@ -1,6 +1,6 @@
-var entity = require('./entity')
-var query = require('./query')
-var Cell = require('cell')
+const Entity = require('./entity')
+const query = require('./query')
+const Cell = require('cell')
 
 /**
  * Create a new DB wrapped in a Cell
@@ -105,7 +105,4 @@ function retract(datom, db){
   }
 }
 
-exports.transact = transact
-exports.create = create
-exports.entity = entity
-exports.query = query
+export {transact,create,Entity,query}

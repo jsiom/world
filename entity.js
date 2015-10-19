@@ -9,14 +9,9 @@ var query = require('./query')
  * @return {Entity}
  */
 
-function createEntity(db, id) {
-  var e = new Entity(id, db, {})
-  return e.cache[id] = e
-}
-
 class Entity {
-  constructor(eid, db, cache) {
-    this.cache = cache
+  constructor(db, eid, cache) {
+    this.cache = cache || {[eid]: this}
     this.eid = eid
     this.db = db
   }
@@ -31,7 +26,7 @@ class Entity {
       var scheme = schema[key]
       if (scheme) {
         if (scheme.type == 'ref') {
-          if (!cache[val]) cache[val] = new Entity(val, this.db, cache)
+          if (!cache[val]) cache[val] = new Entity(this.db, val, cache)
           val = cache[val]
         }
         if (scheme.cardinality == 'many') {
@@ -51,4 +46,4 @@ class Entity {
   }
 }
 
-export default createEntity
+export default Entity
